@@ -1,0 +1,31 @@
+import pandas as pd
+
+def generate_description(row):
+    # Customize this function to interpret the information in each row
+    # and generate a 36-word description based on your dataset's columns.
+    description = f"Row: {row['column1']} - {row['column2']} - {row['column3']} ... (add more columns)"
+    return description
+
+def main(csv_file_path):
+    try:
+        # Load CSV into a DataFrame
+        df = pd.read_csv(csv_file_path)
+
+        # Iterate through rows and generate descriptions
+        descriptions = []
+        for _, row in df.iterrows():
+            description = generate_description(row)
+            descriptions.append(description)
+
+        # Save descriptions to a text file
+        with open('descriptions.txt', 'w') as file:
+            for description in descriptions:
+                file.write(description + '\n')
+    except FileNotFoundError:
+        print(f"File not found: {csv_file_path}")
+    except Exception as e:
+        print(f"An error occurred: {e}")
+
+if __name__ == "__main__":
+    csv_file_path = "path/to/your/csv_file.csv"
+    main(csv_file_path)
