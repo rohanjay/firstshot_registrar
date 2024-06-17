@@ -1,4 +1,38 @@
 import pandas as pd
+import json
+import re
+import requests
+from requests.adapters import HTTPAdapter
+from requests.packages.urllib3.util.retry import Retry
+
+def download_file(url, local_filename):
+    # Setup retry strategy
+    retry_strategy = Retry(
+        total=3,
+        status_forcelist=[429, 500, 502, 503, 504],
+        method_whitelist=["HEAD", "GET", "OPTIONS"]
+    )
+    adapter = HTTPAdapter(max_retries=retry_strategy)
+    http = requests.Session()
+    http.mount("https://", adapter)
+    http.mount("http://", adapter)
+    
+    # Perform the request to get the file
+    with http.get(url, stream=True) as r:
+        r.raise_for_status()
+        with open(local_filename, 'wb') as f:
+            for chunk in r.iter_content(chunk_size=8192):
+                f.write(chunk)
+    return local_filename
+
+def extract_json_from_html(file_path):
+    with open(file_path, 'r', encoding='utf-8') as file:
+        content = file.read()
+        json_data = re.search(r'<script type="application/json">(.*?)</script>', content, re.DOTALL)
+        if json_data:
+            return json.loads(json_data.group(1))
+        else:
+            raise ValueError("No JSON data found in the provided HTML file.")
 
 def generate_description(row):
     # Customize this function to interpret the information in each row
@@ -6,10 +40,17 @@ def generate_description(row):
     description = f"Row: {row['column1']} - {row['column2']} - {row['column3']} ... (add more columns)"
     return description
 
-def main(csv_file_path):
+def main(url):
     try:
-        # Load CSV into a DataFrame
-        df = pd.read_csv(csv_file_path)
+        # Download the file from Dropbox
+        local_filename = 'JSON_001.HTM'
+        download_file(url, local_filename)
+        
+        # Extract JSON data from the HTML file
+        data = extract_json_from_html(local_filename)
+
+        # Convert JSON data to a DataFrame
+        df = pd.DataFrame(data)
 
         # Iterate through rows and generate descriptions
         descriptions = []
@@ -21,11 +62,13 @@ def main(csv_file_path):
         with open('descriptions.txt', 'w') as file:
             for description in descriptions:
                 file.write(description + '\n')
-    except FileNotFoundError:
-        print(f"File not found: {csv_file_path}")
+    except FileNotFoundError as fnf_error:
+        print(fnf_error)
+    except ValueError as ve:
+        print(f"An error occurred: {ve}")
     except Exception as e:
         print(f"An error occurred: {e}")
 
 if __name__ == "__main__":
-    csv_file_path = "path/to/your/csv_file.csv"
-    main(csv_file_path)
+    dropbox_url = "https://www.dropbox.com/s/aeph88b3j2yu7vbennq1j/JSON_001.HTM?dl=1"
+    main(dropbox_url)
