@@ -1,6 +1,6 @@
 Objective: summarize the contents of individual CSV or JSON data file entries using AI, ML, NLP, and other tools:
 Import necessary libraries: The first step is to import libraries like pandas, NLTK, and other NLP tools that will be used in the script.
-Allow user to identify JSON/CSV file: The script should prompt the user to input the path and name of the file that they want to summarize.
+Allow script to find & identify JSON/CSV on an online plaform such as Dropbox: The script should prompt the user to input the path and name of the file that they want to summarize.
 Read and process the JSON/CSV file: The script should use pandas to read the file and process it row by row.
 Apply NLP tools: The script should use NLP tools like tokenization, named entity recognition, and sentiment analysis to analyze the text in each row.
 Generate a summary: Using the results from the NLP tools, the script should generate a summary of the contents of each row in up to 30 words. The summary should be clear, concise, and relevant to the content of the row.
